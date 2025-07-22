@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>なごみの郷 面会予約システム</title>
+    <title>なごみの郷 面会予約アプリ</title>
     <style>
         /* 全体リセットと基本スタイル */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,6 +15,7 @@
             display: flex; /* 中央揃えのために追加 */
             justify-content: center; /* 水平方向の中央揃え */
             align-items: center; /* 垂直方向の中央揃え */
+            flex-direction: column; /* 要素を縦に並べる */
         }
         .container {
             max-width: 800px;
@@ -431,6 +432,48 @@
             transform: translateY(-1px);
         }
 
+        /* 新しいランディングページ用のスタイル */
+        .welcome-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 90%;
+            margin: 0 auto;
+        }
+        .welcome-page h1 {
+            font-size: 2.5em;
+            color: #2d4a35;
+            margin-bottom: 20px;
+        }
+        .welcome-page p {
+            font-size: 1.2em;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+        }
+        .start-button {
+            background: linear-gradient(135deg, #4a7c59 0%, #5d8a6b 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.3em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 124, 89, 0.4);
+        }
+
+
         @media (max-width: 600px) {
             .header h1 { font-size: 1.8em; }
             .form-container { padding: 20px; }
@@ -441,11 +484,21 @@
             .delete-old-data-section .delete-button { width: 100%; }
             .container { padding: 0; } /* スマホでの余白調整 */
             body { padding: 10px; }
+            .welcome-page { padding: 30px; }
+            .welcome-page h1 { font-size: 2em; }
+            .welcome-page p { font-size: 1em; }
+            .start-button { padding: 12px 30px; font-size: 1.1em; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="welcome-page" id="welcomePage">
+        <h1>なごみの郷面会予約アプリへようこそ！</h1>
+        <p>面会予約はこちらから行えます。</p>
+        <button class="start-button" id="startReservationBtn">面会予約システムへ</button>
+    </div>
+
+    <div class="container" id="mainAppContainer" style="display:none;">
         <div class="header">
             <h1>なごみの郷 面会予約システム</h1>
             <p>オンラインで簡単に面会予約ができます</p>
@@ -628,6 +681,11 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
 
+            // DOM要素の取得
+            const welcomePage = document.getElementById('welcomePage');
+            const mainAppContainer = document.getElementById('mainAppContainer');
+            const startReservationBtn = document.getElementById('startReservationBtn');
+
             // 予約データ管理
             function loadReservations() {
                 const data = localStorage.getItem('nagomi_reservations');
@@ -721,4 +779,368 @@
                         createdAt: new Date().toLocaleString('ja-JP'),
                         temperature: "" // 体温は初期状態では空
                     };
-                    reservations.push
+                    reservations.push(newReservation);
+                    saveReservations();
+                    showConfirmation(newReservation); // 予約確認画面を表示
+                    this.reset(); // フォームをリセット
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+
+            // 予約確認画面表示（予約完了後）
+            function showConfirmation(reservation) {
+                document.getElementById('userFormContainer').style.display = 'none'; // フォームとボタンを非表示
+                document.getElementById('confirmation').style.display = 'block'; // 確認画面を表示
+                document.getElementById('reservationNumber').textContent = `予約番号: ${reservation.reservationNumber}`;
+                document.getElementById('confirmationDetails').innerHTML = `
+                    <p><strong>入居者様のお名前:</strong> ${reservation.residentName}</p>
+                    <p><strong>面会者様のお名前:</strong> ${reservation.visitorName}</p>
+                    <p><strong>ご関係:</strong> ${reservation.relationship}</p>
+                    <p><strong>面会希望日:</strong> ${formatDate(reservation.visitDate)}</p>
+                    <p><strong>面会希望時間:</strong> ${reservation.visitTime}</p>
+                    <p><strong>面会者数:</strong> ${reservation.visitorCount}</p>
+                    <p><strong>備考・特別な配慮事項:</strong> ${reservation.notes || 'なし'}</p>
+                `;
+            }
+
+            // 新しい予約作成ボタン
+            document.getElementById('newReservationBtn').onclick = showUserForm;
+
+            // 利用者画面（フォームとボタン）を表示する関数
+            function showUserForm() {
+                welcomePage.style.display = 'none'; // ランディングページを非表示
+                mainAppContainer.style.display = 'flex'; // メインアプリコンテナを表示
+                document.getElementById('userFormContainer').style.display = 'block';
+                document.getElementById('confirmation').style.display = 'none';
+                document.getElementById('staffPanel').style.display = 'none'; // 職員画面は非表示に
+                document.getElementById('reservationForm').reset(); // フォームをリセット
+            }
+
+            // --- 来設受付機能 ---
+            const receptionBtn = document.getElementById('receptionBtn');
+            const receptionModal = document.getElementById('receptionModal');
+            const closeReceptionModalBtn = document.getElementById('closeReceptionModalBtn');
+            const completeReceptionBtn = document.getElementById('completeReceptionBtn');
+            const receptionNumberInput = document.getElementById('receptionNumberInput');
+            const receptionTempInput = document.getElementById('receptionTempInput');
+            const receptionResult = document.getElementById('receptionResult');
+
+            receptionBtn.onclick = function() {
+                receptionModal.style.display = 'flex';
+                receptionResult.textContent = ''; // 結果メッセージをクリア
+                receptionNumberInput.value = '';
+                receptionTempInput.value = '';
+            };
+            closeReceptionModalBtn.onclick = function() {
+                receptionModal.style.display = 'none';
+            };
+            window.addEventListener('click', function(event) {
+                if (event.target === receptionModal) {
+                    receptionModal.style.display = 'none';
+                }
+            });
+
+            completeReceptionBtn.onclick = function() {
+                const reservationNumber = receptionNumberInput.value.trim();
+                const temperature = receptionTempInput.value.trim();
+                receptionResult.style.color = '#721c24'; // デフォルトをエラー色に
+
+                if (!reservationNumber) {
+                    receptionResult.textContent = '受付番号（予約番号）を入力してください。';
+                    return;
+                }
+                if (!temperature) {
+                    receptionResult.textContent = '体温を入力してください。';
+                    return;
+                }
+                if (isNaN(parseFloat(temperature))) {
+                    receptionResult.textContent = '有効な体温を入力してください。';
+                    return;
+                }
+
+                const reservationIndex = reservations.findIndex(r => r.reservationNumber === reservationNumber);
+
+                if (reservationIndex === -1) {
+                    receptionResult.textContent = '該当する予約が見つかりません。予約番号を確認してください。';
+                    return;
+                }
+
+                const reservation = reservations[reservationIndex];
+
+                if (reservation.status === 'completed') {
+                    receptionResult.textContent = 'この予約は既に来設受付が完了しています。';
+                    return;
+                }
+                if (reservation.status === 'cancelled') {
+                    receptionResult.textContent = 'この予約はキャンセル済みです。';
+                    return;
+                }
+
+                // 体温チェック（例: 37.5度以上はアラート）
+                if (parseFloat(temperature) >= 37.5) {
+                    receptionResult.textContent = `体温が${temperature}℃です。入居者様の健康状態を考慮し、面会の可否を検討してください。`;
+                    receptionResult.style.color = '#dc3545'; // 危険な場合は赤色に
+                } else {
+                    receptionResult.textContent = '受付が完了しました。';
+                    receptionResult.style.color = '#4a7c59'; // 成功色に
+                }
+
+                // 体温に関わらず、受付完了ボタンが押されたらステータスを'completed'にする
+                reservation.status = 'completed';
+                reservation.temperature = temperature;
+                saveReservations();
+                updateStaffPanel(); // 職員管理画面を更新
+            };
+
+            // --- トップ画面からの予約キャンセル機能 ---
+            const cancelTopButton = document.getElementById('cancelTopButton');
+            const topCancelModal = document.getElementById('topCancelModal');
+            const closeTopCancelModalBtn = document.getElementById('closeTopCancelModalBtn');
+            const cancelReservationNumberInput = document.getElementById('cancelReservationNumberInput');
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+            const topCancelResult = document.getElementById('topCancelResult');
+
+            cancelTopButton.onclick = function() {
+                topCancelModal.style.display = 'flex';
+                cancelReservationNumberInput.value = '';
+                topCancelResult.textContent = '';
+            };
+            closeTopCancelModalBtn.onclick = function() {
+                topCancelModal.style.display = 'none';
+            };
+            window.addEventListener('click', function(event) {
+                if (event.target === topCancelModal) {
+                    topCancelModal.style.display = 'none';
+                }
+            });
+
+            confirmCancelBtn.onclick = function() {
+                const reservationNumber = cancelReservationNumberInput.value.trim();
+                topCancelResult.style.color = '#721c24'; // デフォルトをエラー色に
+
+                if (!reservationNumber) {
+                    topCancelResult.textContent = 'キャンセルする予約番号を入力してください。';
+                    return;
+                }
+
+                const reservationIndex = reservations.findIndex(r => r.reservationNumber === reservationNumber);
+
+                if (reservationIndex === -1) {
+                    topCancelResult.textContent = '該当する予約が見つかりません。予約番号を確認してください。';
+                    return;
+                }
+
+                if (reservations[reservationIndex].status === 'cancelled') {
+                    topCancelResult.textContent = 'この予約は既にキャンセル済みです。';
+                    return;
+                }
+
+                // 確認ダイアログ
+                if (confirm(`予約番号: ${reservationNumber} の面会予約をキャンセルしますか？\nこの操作は元に戻せません。`)) {
+                    reservations[reservationIndex].status = 'cancelled';
+                    saveReservations();
+                    topCancelResult.textContent = '予約をキャンセルしました。';
+                    topCancelResult.style.color = '#4a7c59'; // 成功色に
+                    updateStaffPanel(); // 職員管理画面を更新
+                } else {
+                    topCancelResult.textContent = 'キャンセルを中止しました。';
+                }
+            };
+
+            // --- 職員専用画面機能 ---
+            const staffButton = document.getElementById('staffButton');
+            const staffPanel = document.getElementById('staffPanel');
+            const backUserFormBtn = document.getElementById('backUserFormBtn');
+            const reservationsList = document.getElementById('reservationsList');
+            const filterDateInput = document.getElementById('filterDate');
+            const filterStatusSelect = document.getElementById('filterStatus');
+            const filterResidentInput = document.getElementById('filterResident');
+            const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+            const deleteDateInput = document.getElementById('deleteDate');
+            const deleteOldReservationsBtn = document.getElementById('deleteOldReservationsBtn');
+
+            staffButton.onclick = function() {
+                mainAppContainer.style.display = 'none'; // メインアプリコンテナを非表示
+                welcomePage.style.display = 'none'; // ランディングページを非表示
+                staffPanel.style.display = 'block';
+                updateStaffPanel();
+            };
+
+            backUserFormBtn.onclick = showUserForm;
+
+            function updateStaffPanel() {
+                updateStats();
+                renderReservations();
+            }
+
+            function updateStats() {
+                const today = new Date().toISOString().split('T')[0];
+                const total = reservations.length;
+                // 本日の予約は、今日が面会日で、かつキャンセル済み/完了済みでないもの
+                const todayCount = reservations.filter(r => r.visitDate === today && r.status !== 'cancelled' && r.status !== 'completed').length;
+                const pending = reservations.filter(r => r.status === 'pending').length;
+                const completed = reservations.filter(r => r.status === 'completed').length;
+
+                document.getElementById('totalReservations').textContent = total;
+                document.getElementById('todayReservations').textContent = todayCount;
+                document.getElementById('pendingReservations').textContent = pending;
+                document.getElementById('completedReservations').textContent = completed;
+            }
+
+            function renderReservations() {
+                reservationsList.innerHTML = ''; // 現在のリストをクリア
+
+                // キャンセル済み以外の予約を日付と時間でソート
+                let filteredReservations = reservations.filter(r => r.status !== 'cancelled').sort((a, b) => {
+                    const dateTimeA = new Date(a.visitDate + ' ' + a.visitTime);
+                    const dateTimeB = new Date(b.visitDate + ' ' + b.visitTime);
+                    return dateTimeA - dateTimeB;
+                });
+
+                // フィルター適用
+                const filterDate = filterDateInput.value;
+                const filterStatus = filterStatusSelect.value;
+                const filterResident = filterResidentInput.value.toLowerCase();
+
+                if (filterDate) {
+                    filteredReservations = filteredReservations.filter(r => r.visitDate === filterDate);
+                }
+                if (filterStatus) {
+                    filteredReservations = filteredReservations.filter(r => r.status === filterStatus);
+                }
+                if (filterResident) {
+                    filteredReservations = filteredReservations.filter(r => r.residentName.toLowerCase().includes(filterResident) || r.visitorName.toLowerCase().includes(filterResident));
+                }
+
+                if (filteredReservations.length === 0) {
+                    reservationsList.innerHTML = '<p style="padding: 20px; text-align: center; color: #666;">該当する予約はありません。</p>';
+                    return;
+                }
+
+                filteredReservations.forEach(reservation => {
+                    const item = document.createElement('div');
+                    item.className = 'reservation-item';
+                    item.setAttribute('data-id', reservation.id); // 予約IDをデータ属性として追加
+
+                    const statusClass = `status-${reservation.status}`;
+                    // 体温が設定されていれば表示
+                    const temperatureDisplay = reservation.temperature ? ` (${reservation.temperature}°C)` : '';
+
+                    item.innerHTML = `
+                        <div class="reservation-number-display">${reservation.reservationNumber}</div>
+                        <div class="reservation-field"><strong>入居者:</strong> ${reservation.residentName}</div>
+                        <div class="reservation-field"><strong>面会者:</strong> ${reservation.visitorName}</div>
+                        <div class="reservation-field"><strong>日時:</strong> ${formatDate(reservation.visitDate)} ${reservation.visitTime}</div>
+                        <div class="reservation-field"><strong>人数:</strong> ${reservation.visitorCount}</div>
+                        <div class="reservation-field"><strong>備考:</strong> ${reservation.notes || 'なし'}${temperatureDisplay}</div>
+                        <div class="status-badge ${statusClass}" data-status="${reservation.status}">${getStatusText(reservation.status)}</div>
+                    `;
+                    reservationsList.appendChild(item);
+                });
+
+                // 各予約アイテムのクリックイベントリスナーを追加
+                reservationsList.querySelectorAll('.reservation-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const reservationId = parseInt(this.getAttribute('data-id'));
+                        const clickedReservation = reservations.find(r => r.id === reservationId);
+                        if (clickedReservation) {
+                            showReservationDetailsModal(clickedReservation);
+                        }
+                    });
+                });
+            }
+
+            // フィルター適用ボタンのイベントリスナー
+            applyFiltersBtn.onclick = renderReservations;
+
+            // --- 予約詳細モーダル機能（職員専用） ---
+            const reservationModal = document.getElementById('reservationModal');
+            const closeReservationModalBtn = document.getElementById('closeReservationModalBtn');
+            const modalContent = document.getElementById('modalContent');
+
+            closeReservationModalBtn.onclick = function() {
+                reservationModal.style.display = 'none';
+            };
+            window.addEventListener('click', function(event) {
+                if (event.target === reservationModal) {
+                    reservationModal.style.display = 'none';
+                }
+            });
+
+            function showReservationDetailsModal(reservation) {
+                modalContent.innerHTML = `
+                    <div class="modal-detail"><p><strong>予約番号:</strong> ${reservation.reservationNumber}</p></div>
+                    <div class="modal-detail"><p><strong>入居者様のお名前:</strong> ${reservation.residentName}</p></div>
+                    <div class="modal-detail"><p><strong>面会者様のお名前:</strong> ${reservation.visitorName}</p></div>
+                    <div class="modal-detail"><p><strong>ご関係:</strong> ${reservation.relationship}</p></div>
+                    <div class="modal-detail"><p><strong>面会希望日:</strong> ${formatDate(reservation.visitDate)}</p></div>
+                    <div class="modal-detail"><p><strong>面会希望時間:</strong> ${reservation.visitTime}</p></div>
+                    <div class="modal-detail"><p><strong>面会者数:</strong> ${reservation.visitorCount}</p></div>
+                    <div class="modal-detail"><p><strong>備考・特別な配慮事項:</strong> ${reservation.notes || 'なし'}</p></div>
+                    <div class="modal-detail"><p><strong>体温:</strong> ${reservation.temperature ? reservation.temperature + '°C' : '未計測'}</p></div>
+                    <div class="modal-detail"><p><strong>予約日時:</strong> ${reservation.createdAt}</p></div>
+                    <div class="modal-detail"><p><strong>現在のステータス:</strong> <span class="status-badge status-${reservation.status}">${getStatusText(reservation.status)}</span></p></div>
+                    <div class="status-buttons">
+                        <button class="status-btn confirmed" data-status="confirmed" data-id="${reservation.id}">承認済みに変更</button>
+                        <button class="status-btn completed" data-status="completed" data-id="${reservation.id}">完了済みに変更</button>
+                        <button class="status-btn cancelled" data-status="cancelled" data-id="${reservation.id}">キャンセル済みに変更</button>
+                    </div>
+                `;
+                reservationModal.style.display = 'flex';
+
+                // ステータス変更ボタンのイベントリスナーを設定
+                modalContent.querySelectorAll('.status-btn').forEach(button => {
+                    button.onclick = function() {
+                        const newStatus = this.getAttribute('data-status');
+                        const resId = parseInt(this.getAttribute('data-id'));
+                        const resIndex = reservations.findIndex(r => r.id === resId);
+
+                        if (resIndex !== -1) {
+                            if (confirm(`${getStatusText(newStatus)} にステータスを変更しますか？`)) {
+                                reservations[resIndex].status = newStatus;
+                                saveReservations();
+                                updateStaffPanel(); // 職員管理画面を更新
+                                reservationModal.style.display = 'none'; // モーダルを閉じる
+                                alert('ステータスが更新されました。');
+                            }
+                        }
+                    };
+                });
+            }
+
+            // --- 過去データ削除機能 ---
+            deleteOldReservationsBtn.onclick = function() {
+                const deleteDate = deleteDateInput.value;
+                if (!deleteDate) {
+                    alert('削除対象の日付を選択してください。');
+                    return;
+                }
+
+                if (!confirm(`${formatDate(deleteDate)} 以前の「全てのステータス」の予約をすべて削除します。\nこの操作は元に戻せません。本当によろしいですか？`)) {
+                    return;
+                }
+
+                const initialLength = reservations.length;
+                // 指定された日付より過去の予約を全て削除する
+                reservations = reservations.filter(r => new Date(r.visitDate) >= new Date(deleteDate));
+                saveReservations();
+                updateStaffPanel();
+                alert(`${initialLength - reservations.length} 件の過去の予約が削除されました。`);
+                deleteDateInput.value = ''; // 削除後に入力欄をクリア
+            };
+
+            // アプリケーションの初期表示設定
+            // 新しいランディングページを表示し、メインコンテナは非表示にする
+            welcomePage.style.display = 'flex';
+            mainAppContainer.style.display = 'none';
+
+            // 「面会予約システムへ」ボタンのクリックイベント
+            startReservationBtn.onclick = showUserForm;
+
+            // 職員管理画面の統計を初期化 (初回ロード時のみ)
+            updateStaffPanel();
+        });
+    </script>
+</body>
+</html>
