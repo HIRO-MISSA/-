@@ -516,7 +516,7 @@
                     <span class="close" id="closeReceptionModalBtn">&times;</span>
                     <h3>来設受付</h3>
                     <div style="margin-bottom:15px;">受付番号（予約番号）と体温を入力してください。</div>
-                    <input type="text" id="receptionNumberInput" style="width:100%;padding:10px;font-size:1em;border-radius:5px;border:1px solid #ddd;margin-bottom:10px;" placeholder="例: 20250720-01">
+                    <input type="text" id="receptionNumberInput" style="width:100%;padding:10px;font-size:1em;border-radius:5px;border:1px solid #ddd;margin-bottom:10px;" placeholder="例: 20250720-001">
                     <input type="number" id="receptionTempInput" style="width:100%;padding:10px;font-size:1em;border-radius:5px;border:1px solid #ddd;" placeholder="体温（例：36.7）" min="34" max="42" step="0.1">
                     <div id="receptionResult" style="margin:15px 0;color:#4a7c59;"></div>
                     <button type="button" class="submit-btn" id="completeReceptionBtn" style="width:100%;">受付を完了する</button>
@@ -528,7 +528,7 @@
                     <span class="close" id="closeTopCancelModalBtn">&times;</span>
                     <h3>予約キャンセル</h3>
                     <p style="margin-bottom: 15px;">キャンセルする予約の予約番号を入力してください。</p>
-                    <input type="text" id="cancelReservationNumberInput" style="width:100%;padding:10px;font-size:1em;border-radius:5px;border:1px solid #ddd;margin-bottom:10px;" placeholder="例: 20250720-01">
+                    <input type="text" id="cancelReservationNumberInput" style="width:100%;padding:10px;font-size:1em;border-radius:5px;border:1px solid #ddd;margin-bottom:10px;" placeholder="例: 20250720-001">
                     <div id="topCancelResult" style="margin:15px 0;color:#721c24;"></div>
                     <button type="button" class="submit-btn" id="confirmCancelBtn" style="background:#dc3545;">キャンセルを実行</button>
                 </div>
@@ -598,7 +598,7 @@
 
             <div class="delete-old-data-section">
                 <h3>過去の面会予約データを削除</h3>
-                <p>指定した日付より過去の「完了」ステータスの予約を削除します。この操作は元に戻せません。</p>
+                <p>指定した日付より過去の「**全てのステータス**」の予約を削除します。この操作は元に戻せません。</p>
                 <div class="delete-row">
                     <div class="filter-group" style="flex-grow: 1;">
                         <label for="deleteDate">削除対象日（この日付より過去）</label>
@@ -643,11 +643,11 @@
             // 初期データの設定 (初回アクセス時のみ適用)
             if (!reservations || !Array.isArray(reservations) || reservations.length === 0) {
                 reservations = [
-                    {id:1,reservationNumber:"20250717-01",residentName:"田中 花子",visitorName:"田中 太郎",relationship:"息子",visitDate:"2025-07-17",visitTime:"14:00",visitorCount:"2",status:"pending",notes:"車椅子使用",createdAt:"2025-07-16 10:30",temperature:""},
-                    {id:2,reservationNumber:"20250716-01",residentName:"佐藤 一郎",visitorName:"佐藤 良子",relationship:"配偶者",visitDate:"2025-07-16",visitTime:"15:30",visitorCount:"1",status:"completed",notes:"",createdAt:"2025-07-15 14:20",temperature:"36.5"},
-                    {id:3,reservationNumber:"20250718-01",residentName:"山田 次郎",visitorName:"山田 良子",relationship:"娘",visitDate:"2025-07-18",visitTime:"11:00",visitorCount:"3",status:"confirmed",notes:"お孫さんも一緒に来られます",createdAt:"2025-07-16 09:15",temperature:""},
-                    {id:4,reservationNumber:"20250719-01",residentName:"鈴木 健太",visitorName:"鈴木 綾子",relationship:"妻",visitDate:"2025-07-19",visitTime:"10:00",visitorCount:"1",status:"pending",notes:"",createdAt:"2025-07-17 11:00",temperature:""},
-                    {id:5,reservationNumber:"20250720-01",residentName:"高橋 静江",visitorName:"高橋 浩",relationship:"夫",visitDate:"2025-07-20",visitTime:"14:30",visitorCount:"2",status:"confirmed",notes:"お土産持参",createdAt:"2025-07-18 13:45",temperature:""}
+                    {id:1,reservationNumber:"20250717-001",residentName:"田中 花子",visitorName:"田中 太郎",relationship:"息子",visitDate:"2025-07-17",visitTime:"14:00",visitorCount:"2",status:"pending",notes:"車椅子使用",createdAt:"2025-07-16 10:30",temperature:""},
+                    {id:2,reservationNumber:"20250716-001",residentName:"佐藤 一郎",visitorName:"佐藤 良子",relationship:"配偶者",visitDate:"2025-07-16",visitTime:"15:30",visitorCount:"1",status:"completed",notes:"",createdAt:"2025-07-15 14:20",temperature:"36.5"},
+                    {id:3,reservationNumber:"20250718-001",residentName:"山田 次郎",visitorName:"山田 良子",relationship:"娘",visitDate:"2025-07-18",visitTime:"11:00",visitorCount:"3",status:"confirmed",notes:"お孫さんも一緒に来られます",createdAt:"2025-07-16 09:15",temperature:""},
+                    {id:4,reservationNumber:"20250719-001",residentName:"鈴木 健太",visitorName:"鈴木 綾子",relationship:"妻",visitDate:"2025-07-19",visitTime:"10:00",visitorCount:"1",status:"pending",notes:"",createdAt:"2025-07-17 11:00",temperature:""},
+                    {id:5,reservationNumber:"20250720-001",residentName:"高橋 静江",visitorName:"高橋 浩",relationship:"夫",visitDate:"2025-07-20",visitTime:"14:30",visitorCount:"2",status:"confirmed",notes:"お土産持参",createdAt:"2025-07-18 13:45",temperature:""}
                 ];
                 saveReservations(); // 初期データを保存
             }
@@ -672,11 +672,14 @@
 
             function generateReservationNumber(visitDate) {
                 const dateString = visitDate.replace(/-/g, '');
+                // その日の予約数をカウントしてユニークな番号を生成
                 // 全ての予約（キャンセル済み含む）を対象に、その日の予約数をカウントしてユニークな番号を生成
                 const allReservationsForDate = loadReservations().filter(r => r.visitDate === visitDate);
                 const nextNumber = allReservationsForDate.length + 1;
-                if (nextNumber > 50) throw new Error('その日は予約が満席です（1日最大50件まで）');
-                return `${dateString}-${nextNumber.toString().padStart(2, '0')}`;
+                // 最大予約数を999件に拡張
+                if (nextNumber > 999) throw new Error('その日は予約が満席です（1日最大999件まで）');
+                // 3桁の連番にパディング
+                return `${dateString}-${nextNumber.toString().padStart(3, '0')}`;
             }
 
             // 予約フォーム送信処理
@@ -694,7 +697,7 @@
                     r.visitDate === visitDate &&
                     r.visitTime === selectedTime &&
                     r.status !== 'cancelled' && // キャンセルされていない予約のみ対象
-                    r.status !== 'completed' // 完了済みの予約も対象外にする場合 (運用による)
+                    r.status !== 'completed'    // 完了済みの予約も対象外
                 );
 
                 if (isTimeBooked) {
@@ -704,6 +707,7 @@
 
                 try {
                     const newReservation = {
+                        // 既存の予約IDの最大値+1を新しいIDとする (IDが重複しないように)
                         id: reservations.length > 0 ? Math.max(...reservations.map(r=>r.id))+1 : 1,
                         reservationNumber: generateReservationNumber(visitDate),
                         residentName: formData.get('residentName'),
@@ -717,362 +721,4 @@
                         createdAt: new Date().toLocaleString('ja-JP'),
                         temperature: "" // 体温は初期状態では空
                     };
-                    reservations.push(newReservation);
-                    saveReservations();
-                    showConfirmation(newReservation); // 予約確認画面を表示
-                    this.reset(); // フォームをリセット
-                } catch (error) {
-                    alert(error.message);
-                }
-            });
-
-            // 予約確認画面表示（予約完了後）
-            function showConfirmation(reservation) {
-                document.getElementById('userFormContainer').style.display = 'none'; // フォームとボタンを非表示
-                document.getElementById('confirmation').style.display = 'block'; // 確認画面を表示
-                document.getElementById('reservationNumber').textContent = `予約番号: ${reservation.reservationNumber}`;
-                document.getElementById('confirmationDetails').innerHTML = `
-                    <p><strong>入居者様のお名前:</strong> ${reservation.residentName}</p>
-                    <p><strong>面会者様のお名前:</strong> ${reservation.visitorName}</p>
-                    <p><strong>ご関係:</strong> ${reservation.relationship}</p>
-                    <p><strong>面会希望日:</strong> ${formatDate(reservation.visitDate)}</p>
-                    <p><strong>面会希望時間:</strong> ${reservation.visitTime}</p>
-                    <p><strong>面会者数:</strong> ${reservation.visitorCount}</p>
-                    <p><strong>備考・特別な配慮事項:</strong> ${reservation.notes || 'なし'}</p>
-                `;
-            }
-
-            // 新しい予約作成ボタン
-            document.getElementById('newReservationBtn').onclick = showUserForm;
-
-            // 利用者画面（フォームとボタン）を表示する関数
-            function showUserForm() {
-                document.getElementById('userFormContainer').style.display = 'block';
-                document.getElementById('confirmation').style.display = 'none';
-                document.getElementById('staffPanel').style.display = 'none'; // 職員画面は非表示に
-                document.getElementById('reservationForm').reset(); // フォームをリセット
-            }
-
-            // --- 来設受付機能 ---
-            const receptionBtn = document.getElementById('receptionBtn');
-            const receptionModal = document.getElementById('receptionModal');
-            const closeReceptionModalBtn = document.getElementById('closeReceptionModalBtn');
-            const completeReceptionBtn = document.getElementById('completeReceptionBtn');
-            const receptionNumberInput = document.getElementById('receptionNumberInput');
-            const receptionTempInput = document.getElementById('receptionTempInput');
-            const receptionResult = document.getElementById('receptionResult');
-
-            receptionBtn.onclick = function() {
-                receptionModal.style.display = 'flex';
-                receptionResult.textContent = ''; // 結果メッセージをクリア
-                receptionNumberInput.value = '';
-                receptionTempInput.value = '';
-            };
-            closeReceptionModalBtn.onclick = function() {
-                receptionModal.style.display = 'none';
-            };
-            window.addEventListener('click', function(event) {
-                if (event.target === receptionModal) {
-                    receptionModal.style.display = 'none';
-                }
-            });
-
-            completeReceptionBtn.onclick = function() {
-                const number = receptionNumberInput.value.trim();
-                const temp = parseFloat(receptionTempInput.value);
-
-                if (!number || isNaN(temp) || temp < 34 || temp > 42) {
-                    receptionResult.style.color = '#e74c3c';
-                    receptionResult.textContent = '受付番号と正しい体温を入力してください。';
-                    return;
-                }
-
-                const reservationIndex = reservations.findIndex(r => r.reservationNumber === number);
-
-                if (reservationIndex === -1) {
-                    receptionResult.style.color = '#e74c3c';
-                    receptionResult.textContent = '該当する予約が見つかりません。';
-                    return;
-                }
-
-                if (reservations[reservationIndex].status === 'completed') {
-                    receptionResult.style.color = '#e74c3c';
-                    receptionResult.textContent = 'この予約はすでに完了しています。';
-                    return;
-                }
-                if (reservations[reservationIndex].status === 'cancelled') {
-                    receptionResult.style.color = '#e74c3c';
-                    receptionResult.textContent = 'この予約はキャンセル済みです。';
-                    return;
-                }
-
-                reservations[reservationIndex].status = 'completed';
-                reservations[reservationIndex].temperature = temp.toFixed(1); // 体温を小数点以下1桁で保存
-                saveReservations();
-                receptionResult.style.color = '#4a7c59';
-                receptionResult.textContent = `予約番号 ${number} の受付が完了しました。（体温: ${temp.toFixed(1)}℃）`;
-
-                // 必要であれば、職員管理画面の統計を更新
-                if (document.getElementById('staffPanel').style.display === 'block') {
-                    updateStatistics();
-                    renderReservations();
-                }
-            };
-
-            // --- 予約キャンセル機能 (トップ画面から) ---
-            const cancelTopButton = document.getElementById('cancelTopButton');
-            const topCancelModal = document.getElementById('topCancelModal');
-            const closeTopCancelModalBtn = document.getElementById('closeTopCancelModalBtn');
-            const cancelReservationNumberInput = document.getElementById('cancelReservationNumberInput');
-            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
-            const topCancelResult = document.getElementById('topCancelResult');
-
-            cancelTopButton.onclick = function() {
-                topCancelModal.style.display = 'flex';
-                topCancelResult.textContent = ''; // 結果メッセージをクリア
-                cancelReservationNumberInput.value = '';
-            };
-            closeTopCancelModalBtn.onclick = function() {
-                topCancelModal.style.display = 'none';
-            };
-            window.addEventListener('click', function(event) {
-                if (event.target === topCancelModal) {
-                    topCancelModal.style.display = 'none';
-                }
-            });
-
-            confirmCancelBtn.onclick = function() {
-                const numberToCancel = cancelReservationNumberInput.value.trim();
-                if (!numberToCancel) {
-                    topCancelResult.style.color = '#e74c3c';
-                    topCancelResult.textContent = '予約番号を入力してください。';
-                    return;
-                }
-
-                const reservationIndex = reservations.findIndex(r => r.reservationNumber === numberToCancel);
-
-                if (reservationIndex === -1) {
-                    topCancelResult.style.color = '#e74c3c';
-                    topCancelResult.textContent = '該当する予約が見つかりません。';
-                    return;
-                }
-
-                if (reservations[reservationIndex].status === 'cancelled') {
-                    topCancelResult.style.color = '#e74c3c';
-                    topCancelResult.textContent = 'この予約はすでにキャンセル済みです。';
-                    return;
-                }
-                if (reservations[reservationIndex].status === 'completed') {
-                    topCancelResult.style.color = '#e74c3c';
-                    topCancelResult.textContent = 'この予約は完了済みのため、キャンセルできません。';
-                    return;
-                }
-
-                // 確認ダイアログ
-                if (!confirm(`予約番号 ${numberToCancel} の予約をキャンセルしてもよろしいですか？`)) {
-                    return;
-                }
-
-                reservations[reservationIndex].status = 'cancelled';
-                saveReservations();
-                topCancelResult.style.color = '#4a7c59';
-                topCancelResult.textContent = `予約番号 ${numberToCancel} の予約をキャンセルしました。`;
-
-                // 必要であれば、職員管理画面の統計を更新
-                if (document.getElementById('staffPanel').style.display === 'block') {
-                    updateStatistics();
-                    renderReservations();
-                }
-            };
-
-
-            // 職員認証
-            const STAFF_PASSWORD = "nagomi753"; // 仮のパスワード
-            document.getElementById('staffButton').onclick = function() {
-                let pw = prompt("職員用パスワードを入力してください。");
-                if (pw === null) return; // キャンセルされた場合
-                if (pw === STAFF_PASSWORD) {
-                    document.getElementById('userFormContainer').style.display = 'none'; // 利用者画面を非表示
-                    document.getElementById('confirmation').style.display = 'none'; // 確認画面を非表示
-                    document.getElementById('staffPanel').style.display = 'block'; // 職員管理画面を表示
-                    renderReservations(); // 職員管理画面の予約一覧をレンダリング
-                    updateStatistics(); // 統計情報を更新
-                    // 削除対象日の初期値を昨日以前に設定
-                    const today = new Date();
-                    today.setDate(today.getDate() - 1); // 今日の1日前
-                    document.getElementById('deleteDate').value = today.toISOString().split('T')[0];
-                } else {
-                    alert("パスワードが違います。");
-                }
-            };
-
-            // 利用者画面に戻る
-            document.getElementById('backUserFormBtn').onclick = showUserForm;
-
-            function updateStatistics() {
-                // キャンセル済みを除外して統計を計算
-                const activeReservations = reservations.filter(r => r.status !== 'cancelled');
-                document.getElementById('totalReservations').textContent = activeReservations.length;
-                const today = new Date().toISOString().split('T')[0];
-                const todayReservations = activeReservations.filter(r => r.visitDate === today).length;
-                document.getElementById('todayReservations').textContent = todayReservations;
-                const pendingReservations = activeReservations.filter(r => r.status === 'pending').length;
-                document.getElementById('pendingReservations').textContent = pendingReservations;
-                const completedReservations = activeReservations.filter(r => r.status === 'completed').length;
-                document.getElementById('completedReservations').textContent = completedReservations;
-            }
-
-            function renderReservations(filteredList = null) {
-                // 職員管理画面ではキャンセル済みの予約も表示する
-                const list = filteredList || reservations;
-                const container = document.getElementById('reservationsList');
-                container.innerHTML = ''; // 一旦クリア
-
-                if (list.length === 0) {
-                    container.innerHTML = '<div style="padding:30px;text-align:center;color:#aaa;">該当する予約はありません。</div>';
-                    return;
-                }
-                // 日付でソート (新しい日付が上に来るように)
-                list.sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
-
-                list.forEach((r) => {
-                    const item = document.createElement('div');
-                    item.className = 'reservation-item';
-                    item.innerHTML = `
-                        <div class="reservation-number-display" data-id="${r.id}">${r.reservationNumber}</div>
-                        <div class="reservation-field"><strong>入居者</strong>${r.residentName}</div>
-                        <div class="reservation-field"><strong>面会者</strong>${r.visitorName} (${r.relationship})</div>
-                        <div class="reservation-field"><strong>日時</strong>${formatDate(r.visitDate)} ${r.visitTime}</div>
-                        <div class="reservation-field"><strong>人数</strong>${r.visitorCount}名</div>
-                        <div class="reservation-field"><strong>体温</strong>${r.temperature ? r.temperature + '℃' : '未測定'}</div>
-                        <div class="status-badge status-${r.status}" data-id="${r.id}">${getStatusText(r.status)}</div>
-                    `;
-                    container.appendChild(item);
-                });
-
-                // 各予約項目にクリックイベントを追加
-                container.querySelectorAll('.reservation-number-display, .status-badge').forEach(el => {
-                    el.addEventListener('click', function() {
-                        const reservationId = parseInt(this.dataset.id);
-                        const reservation = reservations.find(r => r.id === reservationId);
-                        if (reservation) {
-                            showReservationDetailModal(reservation);
-                        }
-                    });
-                });
-            }
-
-            // 予約詳細モーダル表示 (職員管理画面内)
-            const reservationModal = document.getElementById('reservationModal');
-            const closeReservationModalBtn = document.getElementById('closeReservationModalBtn');
-            const modalContent = document.getElementById('modalContent');
-
-            closeReservationModalBtn.onclick = function() {
-                reservationModal.style.display = 'none';
-            };
-            window.addEventListener('click', function(event) {
-                if (event.target === reservationModal) {
-                    reservationModal.style.display = 'none';
-                }
-            });
-
-            function showReservationDetailModal(reservation) {
-                modalContent.innerHTML = `
-                    <div class="modal-detail"><strong>予約番号:</strong> ${reservation.reservationNumber}</div>
-                    <div class="modal-detail"><strong>入居者様:</strong> ${reservation.residentName}</div>
-                    <div class="modal-detail"><strong>面会者様:</strong> ${reservation.visitorName} (${reservation.relationship})</div>
-                    <div class="modal-detail"><strong>面会日時:</strong> ${formatDate(reservation.visitDate)} ${reservation.visitTime}</div>
-                    <div class="modal-detail"><strong>面会者数:</strong> ${reservation.visitorCount}名</div>
-                    <div class="modal-detail"><strong>備考:</strong> ${reservation.notes || 'なし'}</div>
-                    <div class="modal-detail"><strong>体温:</strong> <span id="modalTemp">${reservation.temperature ? reservation.temperature + '℃' : '未測定'}</span></div>
-                    <div class="modal-detail"><strong>現在のステータス:</strong> <span id="modalStatus">${getStatusText(reservation.status)}</span></div>
-                    ${reservation.status !== 'cancelled' ? `
-                        <div class="status-buttons">
-                            ${reservation.status !== 'confirmed' ? `<button class="status-btn confirmed" data-status="confirmed">承認済みに変更</button>` : ''}
-                            ${reservation.status !== 'completed' ? `<button class="status-btn completed" data-status="completed">完了に変更</button>` : ''}
-                            ${reservation.status !== 'cancelled' ? `<button class="status-btn cancelled" data-status="cancelled">キャンセル</button>` : ''}
-                        </div>
-                    ` : '<div style="margin-top:20px; color:#721c24; font-weight:bold;">この予約はキャンセル済みです。</div>'}
-                `;
-
-                // ステータス変更ボタンのイベントリスナー
-                modalContent.querySelectorAll('.status-btn').forEach(btn => {
-                    btn.onclick = function() {
-                        const newStatus = this.dataset.status;
-                        if (confirm(`ステータスを「${getStatusText(newStatus)}」に変更してもよろしいですか？`)) {
-                            const currentTemp = reservation.temperature; // 変更前の体温を保持
-
-                            // 完了にする場合のみ体温入力を促す
-                            if (newStatus === 'completed' && (!currentTemp || currentTemp === "未測定")) {
-                                let tempInput = prompt("体温を入力してください (例: 36.5)");
-                                if (tempInput === null || tempInput.trim() === "") { // キャンセルまたは空の場合
-                                    alert("体温が入力されませんでした。ステータスは変更されません。");
-                                    return;
-                                }
-                                const parsedTemp = parseFloat(tempInput);
-                                if (isNaN(parsedTemp) || parsedTemp < 34 || parsedTemp > 42) {
-                                    alert("無効な体温です。正しい数値を入力してください。ステータスは変更されません。");
-                                    return;
-                                }
-                                reservation.temperature = parsedTemp.toFixed(1); // 小数点以下1桁で保存
-                            } else if (newStatus === 'completed' && currentTemp) {
-                                // 既に体温が入力されている場合は確認
-                                if (!confirm(`体温 ${currentTemp}℃ でこの予約を完了しますか？\n変更する場合はキャンセルして再度操作し、体温を変更してください。`)) {
-                                    return; // ユーザーがキャンセルしたら処理を中断
-                                }
-                            }
-
-                            reservation.status = newStatus;
-                            saveReservations();
-                            updateStatistics();
-                            renderReservations(); // テーブルを再描画
-                            reservationModal.style.display = 'none'; // モーダルを閉じる
-                            alert(`予約番号 ${reservation.reservationNumber} のステータスを「${getStatusText(newStatus)}」に変更しました。`);
-                        }
-                    };
-                });
-                reservationModal.style.display = 'flex';
-            }
-
-            // フィルター機能
-            document.getElementById('applyFiltersBtn').onclick = function() {
-                const filterDate = document.getElementById('filterDate').value;
-                const filterStatus = document.getElementById('filterStatus').value;
-                const filterResident = document.getElementById('filterResident').value.toLowerCase();
-
-                const filtered = reservations.filter(r => {
-                    const matchesDate = filterDate ? r.visitDate === filterDate : true;
-                    const matchesStatus = filterStatus ? r.status === filterStatus : true;
-                    const matchesResident = filterResident ? r.residentName.toLowerCase().includes(filterResident) : true;
-                    return matchesDate && matchesStatus && matchesResident;
-                });
-                renderReservations(filtered);
-                updateStatistics(); // 統計も更新 (フィルタリングされた結果に基づく)
-            };
-
-            // 過去データ削除機能
-            document.getElementById('deleteOldReservationsBtn').onclick = function() {
-                const deleteDate = document.getElementById('deleteDate').value;
-                if (!deleteDate) {
-                    alert('削除対象日を選択してください。');
-                    return;
-                }
-
-                if (!confirm(`${formatDate(deleteDate)} より過去の「完了済み」予約をすべて削除します。この操作は元に戻せません。本当によろしいですか？`)) {
-                    return;
-                }
-
-                const initialCount = reservations.length;
-                reservations = reservations.filter(r => !(r.status === 'completed' && r.visitDate < deleteDate));
-                saveReservations();
-                alert(`指定された条件の予約を削除しました。削除数: ${initialCount - reservations.length}件`);
-                renderReservations(); // テーブルを再描画
-                updateStatistics(); // 統計を更新
-            };
-
-            // ページロード時に利用者画面を表示
-            showUserForm();
-        });
-    </script>
-</body>
-</html>
+                    reservations.push
